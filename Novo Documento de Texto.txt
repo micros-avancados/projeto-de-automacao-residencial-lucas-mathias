@@ -1,0 +1,47 @@
+deve contar com no mínimo dois dispositivos que implementam funções distintas.
+Os dispositivos devem implementar pelo menos uma das funcionalidades descritas,
+além de outras que são exigências do projeto.
+Um dos dispositivos deve se comportar como sensor de temperatura,
+informando os valores de temperatura lidos para um servidor.
+A leitura da temperatura deve ser realizada em intervalos de tempo configuráveis pelo usuário do sistema,
+sempre obedecendo às características do sensor utilizado.
+
+
+Um segundo dispositivo que permitam o acionamento remoto de outros dispositivos via infravermelho.
+Ambos os dispositivos devem ser construídos utilizando como base o módulo NodeMCU.
+construção de uma placa para interconexão dos componentes específicos de cada módulo.
+
+
+O servidor para troca de informações entre os módulos
+Todos os dispositivos devem enviar e receber informações de um servidor
+um equipamento de ar-condicionado deva ser ligado levando em conta a variação de temperatura,
+no servidor a lógica de verificação da temperatura recebida e do envio do comando de ligar para outro dispositivo.
+
+
+os dispositivos devem funcionar em dois formatos:
+configuração e operação normal.
+o dispositivo deve criar uma rede Wi-Fi que possibilite a conexão para configuração.
+A configuração deve ser realizada via navegador web, enviando dados pertinentes para operação do equipamento.
+No modo de operação, o dispositivo deve funcionar baseado nas configuração realizadas no modo anterior.
+A alternância entre os modos pode ser realizada via um botão de interface que possibilite essa condição.
+
+
+Para a comunicação entre os dispositivos e o servidor, a utilização do protocolo de comunicação MQTT.
+Tanto os dispositivos quanto o servidor devem se comunicar utilizando esse protocolo.
+
+
+todos os dispositivos devem ser capazes de receber atualizações remotas de firmware.
+O projeto deve implementar a atualização automática de todos os dispositivos na rede assim que uma nova versão de firmware
+for disponibilizada.
+
+
+Os projetos deve ter versionamento de código. Para tal, todos os grupos devem sincronizar seus projetos com um repositório
+de código que será criado para os projetos. Todos os integrantes do grupo devem trabalhar no mesmo repositório, facilitando
+a organização do projeto. Como forma de padronização, será utilizado o software Git para versionamento dos códigos e a
+plataforma GitHub para hospedagem e controle das alterações no projeto. A entrega dos projetos também será realizada
+via plataforma GitHub.
+
+
+Os grupos podem criar os projetos em https://classroom.github.com/g/_HPyR_wT. Os códigos devem ser atualizados
+regularmente na plataforma, juntamente com a documentação do projeto, abertura de registros de problemas ou ideias etc.
+Todo o controle do projeto será avaliado na plataforma. A data limite para atualização dos projetos é 03/09.
