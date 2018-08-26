@@ -40,7 +40,8 @@ void leitura_da_temp()
   server.send(200, "text/html", ret);
 }
 
-void setup() {
+void setup() 
+{
 	delay(1000);
 	Serial.begin(115200);
 	Serial.println();
@@ -61,7 +62,8 @@ void setup() {
 
 
 
-void loop() {
+void loop() 
+{
   //Serial.println(mensagem);
   
 	server.handleClient();
