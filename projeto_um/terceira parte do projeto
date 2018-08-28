@@ -212,15 +212,6 @@ void loop()
 
     l_state = state; // iguala os valores
 
-  if (connected) 
-  {
-    led_conexao.on();
-    Blynk.run();
-  }
-  else 
-  {
-    led_conexao.off();
-  }
 
   if (state != l_state) 
   {   // Atualiza o estado
