@@ -1,0 +1,174 @@
+#include <ESP8266WiFi.h>
+#include <PubSubClient.h>
+#include <ESP8266WebServer.h>
+#include <IRsend.h>
+
+//-------------------VARIAVEIS GLOBAIS--------------------------
+int contconexion = 0;
+
+const char* ssid = "projeto";
+const char* password =  "00000000";
+char   SERVER[50]   = "75.101.131.202"; //"m11.cloudmqtt.com"
+int    SERVERPORT   = 18822;
+String USERNAME = "placa1";   
+char   PASSWORD[50] = "12345678";     
+
+unsigned long previousMillis = 0;
+
+char charPulsador [15];
+String strPulsador;
+String strPulsadorUltimo;
+float temp;
+uint16_t liga[] = {4600, 4150, 800, 1350, 800, 300, 750, 1400, 750, 1400, 750, 300, 800, 300, 750, 1400, 750, 350, 750, 300, 750, 1450, 700, 350, 700, 400, 700, 1450, 700, 1450, 700, 400, 650, 1500, 650, 400, 700, 400, 650, 450, 650, 1500, 650, 1500, 650, 1500, 650, 1500, 650, 1500, 650, 1550, 600, 1500, 650, 1550, 600, 450, 600, 500, 600, 450, 650, 450, 650, 450, 600, 450, 650, 450, 600, 1550, 600, 500, 600, 450, 650, 1500, 600, 500, 600, 500, 600, 1550, 600, 1550, 600, 500, 600, 1500, 650, 1550, 600, 450, 600, 1550, 600, 1550, 600}; 
+uint16_t desliga[] = {4500, 4200, 650, 1450, 700, 400, 650, 1450, 650, 1500, 650, 400, 650, 450, 650, 1500, 600, 450, 650, 450, 600, 1500, 650, 450, 600, 500, 600, 1500, 600, 1550, 600, 450, 600, 1550, 600, 450, 600, 1550, 600, 1550, 600, 1550, 600, 1550, 600, 450, 600, 1550, 600, 1500, 600, 1550, 600, 450, 600, 500, 600, 450, 600, 500, 550, 1550, 600, 500, 550, 500, 600, 1550, 600, 1500, 600, 1550, 600, 500, 550, 500, 600, 450, 600, 500, 600, 450, 600, 500, 600, 450, 600, 450, 600, 1550, 600, 1550, 600, 1550, 550, 1600, 550, 1550, 550};
+
+
+char PLACA[50];
+
+char valueStr[15];
+String strtemp = "";
+char TEMPERATURA[50];
+char PULSADOR[50];
+int freq = 38;
+String html;
+
+
+
+//-------------------------------------------------------------------------------
+WiFiClient espClient;
+ESP8266WebServer server(80);
+PubSubClient client(espClient);
+IRsend irsend(4);
+
+
+//------------------------CALLBACK-----------------------------------------------
+void callback(char* topic, byte* payload, unsigned int length) {
+
+  char PAYLOAD[5] = "    ";
+  
+  Serial.print("Mensagem Recibida: [");
+  Serial.print(topic);
+  Serial.print("] ");
+  for (int i = 0; i < length; i++) {
+    PAYLOAD[i] = (char)payload[i];
+  }
+  Serial.println(PAYLOAD);
+}
+
+//------------------------RECONNECT----------------------------------------------
+void reconnect() {
+  uint8_t retries = 3;
+  while (!client.connected()) {
+    Serial.print("Tentando conexao com MQTT...");
+    String clientId = "ESP8266Client-";
+    clientId += String(random(0xffff), HEX);
+    // Attempt to connect
+    USERNAME.toCharArray(PLACA, 50);
+    if (client.connect("", PLACA, PASSWORD)) {
+      Serial.println("conectado");
+    } else {
+      Serial.print("fallo, rc=");
+      Serial.print(client.state());
+      Serial.println(" tentar novamente em 5 segundos");
+      // espera 5 segundos antes de reiniciar
+      delay(5000);
+    }
+    retries--;
+    if (retries == 0) {
+      while (1);
+    }
+  }
+}
+
+//------------------------SETUP--------------------------------------------------
+void setup() {
+
+  pinMode(13, OUTPUT); // D7 saida analógica
+  analogWrite(13, 0); // analogWrite(pin, value);
+  pinMode(12, OUTPUT); // D6 saida digital
+  digitalWrite(12, LOW);
+
+  // Entradas
+  pinMode(14, INPUT); // D5
+
+  // Inicia Serial
+  Serial.begin(115200);
+  Serial.println("");
+
+  // Conexión WIFI
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED and contconexion <50) { 
+    ++contconexion;
+    delay(500);
+    Serial.print(".");
+  }
+  if (contconexion <50) {
+      //para usar con ip fija
+      IPAddress ip(192,168,1,156); 
+      IPAddress gateway(192,168,1,1); 
+      IPAddress subnet(255,255,255,0); 
+      WiFi.config(ip, gateway, subnet); 
+      
+      Serial.println("");
+      Serial.println("WiFi conectado");
+      Serial.println(WiFi.localIP());
+  }
+  else { 
+      Serial.println("");
+      Serial.println("Erro de conexao");
+  }
+  
+  client.setServer(SERVER, SERVERPORT);
+  client.setCallback(callback);
+
+  String temperatura = "/" + USERNAME + "/" + "temperatura"; 
+  temperatura.toCharArray(TEMPERATURA, 50);
+  String pulsador = "/" + USERNAME + "/" + "pulsador"; 
+  pulsador.toCharArray(PULSADOR, 50);
+}
+
+//--------------------------LOOP--------------------------------------------
+void loop() {
+
+  if (!client.connected()) {
+    reconnect();
+  }
+  client.loop();
+
+  unsigned long currentMillis = millis();
+    
+  if (currentMillis - previousMillis >= 10000) { //envia a temperatura a cada 10 segundos
+    previousMillis = currentMillis;
+    int analog = analogRead(17);
+    temp = analog*0.322265625;
+    strtemp = String(temp, 1); 
+    strtemp.toCharArray(valueStr, 15);
+    Serial.println("Enviando: [" +  String(TEMPERATURA) + "] " + strtemp);
+    client.publish(TEMPERATURA, valueStr);
+  }
+  
+  if (digitalRead(14) == 0) {
+    strPulsador = "presionado";
+  } else {
+    strPulsador = "nao presionado";
+  }
+
+  if (strPulsador != strPulsadorUltimo) { //envia o estado do pulsador somente quando muda
+    strPulsadorUltimo = strPulsador;
+    strPulsador.toCharArray(valueStr, 15);
+    Serial.println("Enviando: [" +  String(PULSADOR) + "] " + strPulsador);
+    client.publish(PULSADOR, valueStr);
+  }
+
+  
+  if (temp < 25){
+    irsend.sendRaw(desliga, sizeof(desliga) / sizeof(desliga[0]), freq);
+    Serial.println("Comando enviado: Desliga");
+    delay(2000);
+  }
+  else if (temp > 25){
+    irsend.sendRaw(liga, sizeof(liga) / sizeof(liga[0]), freq);
+    Serial.println("Comando enviado: Liga");
+    delay(2000);
+  }
+}
