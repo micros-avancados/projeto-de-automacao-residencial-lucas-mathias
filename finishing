@@ -1,0 +1,58 @@
+
+#define botao  14
+int contador = 0;
+int modoOperacao(int modo, int aux);
+
+void setup() 
+{
+
+pinMode(botao, INPUT);
+Serial.begin(115200);
+}
+
+void loop() 
+{
+
+Serial.println(digitalRead(botao));
+
+
+ 
+//contador = modoOperacao(digitalRead(botao), contador);   
+
+if(contador)
+{
+ // Função do botão precionado
+ Serial.println("Modo Botão HIGH ");  
+}
+else
+{
+  // função normal
+  Serial.println("Modo Botão LOW");
+}
+}
+
+int modoOperacao(int modo, int aux)
+{
+  int m = 0;
+
+ if(modo == 1 && aux == 0)
+ {
+   m = 1; 
+ }
+  return m;
+}
+/*
+Equivalencia das saidas Digitais entre NodeMCU e ESP8266 (na IDE do Arduino)
+NodeMCU - ESP8266
+D0 = 16;
+D1 = 5;
+D2 = 4;
+D3 = 0;
+D4 = 2;
+D5 = 14;
+D6 = 12;
+D7 = 13;
+D8 = 15;
+D9 = 3;
+D10 = 1;
+*/
